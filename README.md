@@ -1,3 +1,5 @@
+# This renders custom order histories card. Contact->Order Histories
+
 # HubSpot Getting Started Project Template
 
 This is the Getting Started project for HubSpot developer projects. It contains a private app, a CRM card written in React, and a serverless function that the CRM card is able to interact with. This code is intended to help developers get up and running with developer projects quickly and easily.
