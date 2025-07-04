@@ -1,0 +1,8 @@
+{
+  "appFunctions": {
+    "myFunc": {
+      "file": "example-function.js",
+      "secrets": ["HUBSPOT_PRIVATE_TOKEN"]
+    }
+  }
+}
