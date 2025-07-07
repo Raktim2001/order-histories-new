@@ -172,6 +172,31 @@ const Extension = ({ context, runServerless, sendAlert }) => {
       </Flex>
     </TableCell>
   );
+  const NumericCell = ({ children, width }) => (
+    <TableCell width={width}>
+      <Flex
+        style={{
+          padding: "4px",
+          height: "100%",
+          justifyContent: "flex-end",
+          alignItems: "center",
+        }}
+      >
+        <Text
+          style={{
+            fontSize: "12px",
+            fontFamily: "monospace",
+            textAlign: "right",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {children}
+        </Text>
+      </Flex>
+    </TableCell>
+  );
 
   return (
     <>
@@ -205,19 +230,19 @@ const Extension = ({ context, runServerless, sendAlert }) => {
               <SortableHeaderCell
                 label="Product Name"
                 sortKey="productName"
-                width="200px"
+                width="120px"
               />
               <SortableHeaderCell label="Qty" sortKey="qty" width="60px" />
               <SortableHeaderCell
                 label="Sales"
                 sortKey="salesPrice"
-                width="80px"
+                width="100px"
               />
               <SortableHeaderCell label="Total" sortKey="total" width="80px" />
               <SortableHeaderCell
                 label="Fulfillment"
                 sortKey="fulfillment"
-                width="120px"
+                width="140px"
               />
               <SortableHeaderCell
                 label="Channel"
@@ -236,13 +261,13 @@ const Extension = ({ context, runServerless, sendAlert }) => {
               <TableRow key={idx}>
                 <DataCell width="100px">{order.date}</DataCell>
                 <DataCell width="100px">{order.sku}</DataCell>
-                <DataCell width="200px">{order.productName}</DataCell>
-                <DataCell width="60px">{order.qty}</DataCell>
-                <DataCell width="80px">{order.salesPrice}</DataCell>
-                <DataCell width="80px">{order.total}</DataCell>
+                <DataCell width="120px">{order.productName}</DataCell>
+                <NumericCell width="60px">{order.qty}</NumericCell>
+                <NumericCell width="80px">{order.salesPrice}</NumericCell>
+                <NumericCell width="80px">{order.total}</NumericCell>
                 <DataCell width="120px">{order.fulfillment}</DataCell>
                 <DataCell width="120px">{order.channel}</DataCell>
-                <DataCell width="120px">{order.orderNum}</DataCell>
+                <NumericCell width="80px">{order.orderNum}</NumericCell>
               </TableRow>
             ))}
           </TableBody>
