@@ -74,7 +74,6 @@ const Extension = ({ context, runServerless, sendAlert }) => {
     setSortConfig({ key, direction });
   };
 
-  // Compute filtered + sorted orders
   const displayedOrders = useMemo(() => {
     let result = [...orders];
 
@@ -115,12 +114,16 @@ const Extension = ({ context, runServerless, sendAlert }) => {
   };
 
   const SortableHeaderCell = ({ label, sortKey, width }) => (
-    <TableCell width={width}>
+    <TableCell style={{ width }}>
       <Flex
         style={{
-          padding: "8px",
+          minWidth: 0,
+          width: "100%",
           justifyContent: "center",
           alignItems: "center",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
         }}
       >
         <Button
@@ -128,12 +131,10 @@ const Extension = ({ context, runServerless, sendAlert }) => {
           variant="tertiary"
           size="small"
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "4px",
-            fontWeight: "bold",
             width: "100%",
             justifyContent: "center",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
           aria-sort={
             sortConfig.key === sortKey
@@ -143,27 +144,30 @@ const Extension = ({ context, runServerless, sendAlert }) => {
               : "none"
           }
         >
-          {label}
-          {renderSortIndicator(sortKey)}
+          {label} {renderSortIndicator(sortKey)}
         </Button>
       </Flex>
     </TableCell>
   );
 
   const DataCell = ({ children, width }) => (
-    <TableCell width={width}>
+    <TableCell style={{ width }}>
       <Flex
         style={{
-          padding: "8px",
-          height: "100%",
+          minWidth: 0,
+          width: "100%",
           justifyContent: "center",
           alignItems: "center",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          maxWidth: width,
         }}
       >
         <Text
           style={{
-            whiteSpace: "nowrap",
             overflow: "hidden",
+            whiteSpace: "nowrap",
             textOverflow: "ellipsis",
           }}
         >
@@ -172,22 +176,53 @@ const Extension = ({ context, runServerless, sendAlert }) => {
       </Flex>
     </TableCell>
   );
+
   const NumericCell = ({ children, width }) => (
-    <TableCell width={width}>
+    <TableCell style={{ width }}>
       <Flex
         style={{
-          padding: "4px",
-          height: "100%",
-          justifyContent: "flex-end",
+          minWidth: 0,
+          width: "100%",
+          justifyContent: "center",
           alignItems: "center",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          maxWidth: width,
         }}
       >
         <Text
           style={{
             fontSize: "12px",
             fontFamily: "monospace",
-            textAlign: "right",
+            overflow: "hidden",
             whiteSpace: "nowrap",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {children}
+        </Text>
+      </Flex>
+    </TableCell>
+  );
+
+  const MultiLineDataCell = ({ children, width }) => (
+    <TableCell style={{ width }}>
+      <Flex
+        style={{
+          minWidth: 0,
+          width: "100%",
+          justifyContent: "center",
+          alignItems: "center",
+          overflow: "hidden",
+          maxWidth: width,
+        }}
+      >
+        <Text
+          style={{
+            display: "-webkit-box",
+            WebkitBoxOrient: "vertical",
+            WebkitLineClamp: 5,
             overflow: "hidden",
             textOverflow: "ellipsis",
           }}
@@ -217,61 +252,69 @@ const Extension = ({ context, runServerless, sendAlert }) => {
       <Divider />
 
       {displayedOrders.length > 0 ? (
-        <Table
-          style={{
-            tableLayout: "fixed",
-            width: "100%",
-          }}
-        >
-          <TableHead>
-            <TableRow>
-              <SortableHeaderCell label="Date" sortKey="date" width="100px" />
-              <SortableHeaderCell label="SKU" sortKey="sku" width="100px" />
-              <SortableHeaderCell
-                label="Product Name"
-                sortKey="productName"
-                width="120px"
-              />
-              <SortableHeaderCell label="Qty" sortKey="qty" width="60px" />
-              <SortableHeaderCell
-                label="Sales"
-                sortKey="salesPrice"
-                width="100px"
-              />
-              <SortableHeaderCell label="Total" sortKey="total" width="80px" />
-              <SortableHeaderCell
-                label="Fulfillment"
-                sortKey="fulfillment"
-                width="140px"
-              />
-              <SortableHeaderCell
-                label="Channel"
-                sortKey="channel"
-                width="120px"
-              />
-              <SortableHeaderCell
-                label="Order No"
-                sortKey="orderNum"
-                width="120px"
-              />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {displayedOrders.map((order, idx) => (
-              <TableRow key={idx}>
-                <DataCell width="100px">{order.date}</DataCell>
-                <DataCell width="100px">{order.sku}</DataCell>
-                <DataCell width="120px">{order.productName}</DataCell>
-                <NumericCell width="60px">{order.qty}</NumericCell>
-                <NumericCell width="80px">{order.salesPrice}</NumericCell>
-                <NumericCell width="80px">{order.total}</NumericCell>
-                <DataCell width="120px">{order.fulfillment}</DataCell>
-                <DataCell width="120px">{order.channel}</DataCell>
-                <NumericCell width="80px">{order.orderNum}</NumericCell>
+        <Flex style={{ overflowX: "auto" }}>
+          <Table
+            style={{
+              tableLayout: "fixed",
+              width: "1200",
+            }}
+          >
+            <TableHead>
+              <TableRow>
+                <SortableHeaderCell label="Date" sortKey="date" width="100px" />
+                <SortableHeaderCell label="SKU" sortKey="sku" width="100px" />
+                <SortableHeaderCell
+                  label="Product Name"
+                  sortKey="productName"
+                  width="220px"
+                />
+                <SortableHeaderCell label="Qty" sortKey="qty" width="80px" />
+                <SortableHeaderCell
+                  label="Sales $"
+                  sortKey="salesPrice"
+                  width="100px"
+                />
+                <SortableHeaderCell
+                  label="Total $"
+                  sortKey="total"
+                  width="140px"
+                />
+                <SortableHeaderCell
+                  label="Fulfillment"
+                  sortKey="fulfillment"
+                  width="140px"
+                />
+                <SortableHeaderCell
+                  label="Channel"
+                  sortKey="channel"
+                  width="120px"
+                />
+                <SortableHeaderCell
+                  label="Order No"
+                  sortKey="orderNum"
+                  width="120px"
+                />
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {displayedOrders.map((order, idx) => (
+                <TableRow key={idx}>
+                  <DataCell width="100px">{order.date}</DataCell>
+                  <DataCell width="100px">{order.sku}</DataCell>
+                  <MultiLineDataCell width="220px">
+                    {order.productName}
+                  </MultiLineDataCell>
+                  <NumericCell width="80px">{order.qty}</NumericCell>
+                  <NumericCell width="100px">{order.salesPrice}</NumericCell>
+                  <NumericCell width="240px">{order.total}</NumericCell>
+                  <DataCell width="140px">{order.fulfillment}</DataCell>
+                  <DataCell width="120px">{order.channel}</DataCell>
+                  <NumericCell width="120px">{order.orderNum}</NumericCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Flex>
       ) : (
         <Text>No orders loaded yet.</Text>
       )}
