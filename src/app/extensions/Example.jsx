@@ -128,13 +128,14 @@ const Extension = ({ context, runServerless, sendAlert }) => {
       >
         <Button
           onClick={() => handleSort(sortKey)}
-          variant="tertiary"
-          size="small"
+          variant="primary"
+          size="md"
           style={{
             width: "100%",
             justifyContent: "center",
             overflow: "hidden",
             textOverflow: "ellipsis",
+            fontWeight: "bold", //
           }}
           aria-sort={
             sortConfig.key === sortKey
@@ -270,12 +271,12 @@ const Extension = ({ context, runServerless, sendAlert }) => {
                 />
                 <SortableHeaderCell label="Qty" sortKey="qty" width="80px" />
                 <SortableHeaderCell
-                  label="Sales $"
+                  label="Sales $$"
                   sortKey="salesPrice"
                   width="100px"
                 />
                 <SortableHeaderCell
-                  label="Total $"
+                  label="Total $$"
                   sortKey="total"
                   width="140px"
                 />
