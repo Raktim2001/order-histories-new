@@ -1,9 +1,8 @@
 const axios = require("axios");
 
 exports.main = async (context = {}) => {
-  console.log("Example card serverless function triggered. context:", context);
+  console.log("🔹 Serverless function triggered with context:", context);
 
-  // Instead of text, read contactId
   const contactId = context.parameters?.contactId;
 
   if (!contactId) {
@@ -28,46 +27,80 @@ exports.main = async (context = {}) => {
       }
     );
 
-    console.log("Associations response:", assocResp.data);
+    console.log("🔸 Associations response:", assocResp.data);
 
-    const orderIds = assocResp.data.results.map((r) => r.id);
+    const orderIds = assocResp.data.results?.map((r) => r.id) || [];
 
+    if (orderIds.length === 0) {
+      console.log("ℹ️ No order associations found.");
+      return {
+        statusCode: 200,
+        body: JSON.stringify([]),
+      };
+    }
+
+    // Batch fetch properties
+    const BATCH_SIZE = 100;
     const orders = [];
 
-    for (const id of orderIds) {
-      const orderResp = await axios.get(
-        `${HUBSPOT_API_URL}/crm/v3/objects/${customObjectType}/${id}?properties=customer_name,hpl_id,order_num,channel,date,fulfillment,hubspot_id,product_name,qty,sales_price,sku,total`,
+    for (let i = 0; i < orderIds.length; i += BATCH_SIZE) {
+      const batch = orderIds.slice(i, i + BATCH_SIZE);
+
+      const batchResp = await axios.post(
+        `${HUBSPOT_API_URL}/crm/v3/objects/${customObjectType}/batch/read`,
+        {
+          properties: [
+            "customer_name",
+            "hpl_id",
+            "order_num",
+            "channel",
+            "date",
+            "fulfillment",
+            "hubspot_id",
+            "product_name",
+            "qty",
+            "sales_price",
+            "sku",
+            "total",
+          ],
+          inputs: batch.map((id) => ({ id })),
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
         }
       );
-      console.log("orderResp", orderResp.data);
-      const props = orderResp.data.properties;
 
-      orders.push({
-        customerName: props.customer_name || "",
-        hplId: props.hpl_id || "",
-        orderNum: props.order_num || "",
-        channel: props.channel || "",
-        date: props.date || "",
-        fulfillment: props.fulfillment || "",
-        hubspotId: props.hubspot_id || "",
-        productName: props.product_name || "",
-        qty: props.qty || "",
-        salesPrice: props.sales_price || "",
-        sku: props.sku || "",
-        total: props.total || "",
+      const batchOrders = batchResp.data.results.map((order) => {
+        const props = order.properties;
+        return {
+          customerName: props.customer_name || "",
+          hplId: props.hpl_id || "",
+          orderNum: props.order_num || "",
+          channel: props.channel || "",
+          date: props.date || "",
+          fulfillment: props.fulfillment || "",
+          hubspotId: props.hubspot_id || "",
+          productName: props.product_name || "",
+          qty: props.qty || "",
+          salesPrice: props.sales_price || "",
+          sku: props.sku || "",
+          total: props.total || "",
+        };
       });
+
+      orders.push(...batchOrders);
     }
 
+    console.log(` Returning ${orders.length} order(s).`);
     return {
       statusCode: 200,
       body: JSON.stringify(orders),
     };
   } catch (err) {
-    console.error("Serverless error:", err.response?.data || err);
+    console.error(" Serverless error:", err.response?.data || err);
     return {
       statusCode: 500,
       body: "Failed to fetch order history",

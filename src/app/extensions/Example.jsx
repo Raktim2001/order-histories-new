@@ -25,15 +25,27 @@ const Extension = ({ context, runServerless, sendAlert }) => {
   const [orders, setOrders] = useState([]);
   const [search, setSearch] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const [loading, setLoading] = useState(true); //  loading state
 
   const fetchOrders = async () => {
+    setLoading(true); //  start loading
     try {
-      const { response } = await runServerless({
+      const result = await runServerless({
         name: "myFunc",
         parameters: {
           contactId: context.crm?.objectId,
         },
       });
+
+      if (!result || !result.response) {
+        sendAlert({
+          type: "error",
+          message: `No response received from serverless function.`,
+        });
+        return;
+      }
+
+      const { response } = result;
 
       if (response.statusCode !== 200) {
         sendAlert({
@@ -44,17 +56,17 @@ const Extension = ({ context, runServerless, sendAlert }) => {
       }
 
       const ordersArray = JSON.parse(response.body);
-      console.log("Fetched orders array:", ordersArray);
-
       setOrders(ordersArray);
     } catch (e) {
-      console.error("Failed to run serverless:", e);
+      console.error(" Failed to run serverless:", e);
       sendAlert({
         type: "error",
         message: `Failed to run serverless. Full error:\n${
           e?.message || JSON.stringify(e)
         }`,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -135,7 +147,7 @@ const Extension = ({ context, runServerless, sendAlert }) => {
             justifyContent: "center",
             overflow: "hidden",
             textOverflow: "ellipsis",
-            fontWeight: "bold", //
+            fontWeight: "bold",
           }}
           aria-sort={
             sortConfig.key === sortKey
@@ -234,6 +246,13 @@ const Extension = ({ context, runServerless, sendAlert }) => {
     </TableCell>
   );
 
+  const grandTotal = useMemo(() => {
+    return displayedOrders.reduce((sum, order) => {
+      const val = parseFloat(order.total);
+      return sum + (isNaN(val) ? 0 : val);
+    }, 0);
+  }, [displayedOrders]);
+
   return (
     <>
       <Flex
@@ -248,18 +267,33 @@ const Extension = ({ context, runServerless, sendAlert }) => {
           onInput={handleSearch}
           placeholder="Search Histories"
         />
+        <Flex
+          justify="center"
+          align="center"
+          style={{
+            marginTop: "12px",
+            marginBottom: "8px",
+            fontSize: "16px",
+            fontWeight: "bold",
+          }}
+        >
+          <Button variant="transparent" size="lg">
+            Total Sales: $
+            {grandTotal.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </Button>
+        </Flex>
       </Flex>
 
       <Divider />
 
-      {displayedOrders.length > 0 ? (
+      {loading ? (
+        <Text>Loading orders...</Text>
+      ) : displayedOrders.length > 0 ? (
         <Flex style={{ overflowX: "auto" }}>
-          <Table
-            style={{
-              tableLayout: "fixed",
-              width: "1200",
-            }}
-          >
+          <Table style={{ tableLayout: "fixed", width: "1200" }}>
             <TableHead>
               <TableRow>
                 <SortableHeaderCell label="Date" sortKey="date" width="100px" />
@@ -317,7 +351,7 @@ const Extension = ({ context, runServerless, sendAlert }) => {
           </Table>
         </Flex>
       ) : (
-        <Text>No orders loaded yet.</Text>
+        <Text>No orders found for this contact.</Text>
       )}
     </>
   );
